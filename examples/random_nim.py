@@ -3,13 +3,6 @@ import numpy as np
 import gym_nim
 import random
 
-
-def random_plus_middle_move(moves, p):
-    if ([p, 4] in moves):
-        m = [p, 4]
-    else:
-        m = random_move(moves, p)
-    return m
 def random_move(moves, p):
     m = random.choice(moves)
     return m
@@ -38,10 +31,7 @@ for i in range(num_episodes):
         if (len(moves)==1):
             m = moves[0]
         else:
-            if (om == 1):
-                m = random_plus_middle_move(moves, om)
-            else:
-                m = random_move(moves, om)
+            m = random_move(moves, om)
         print ("m: ", m)
 #         a = env.action_space.sample()
 #         print (a[0])
@@ -49,7 +39,9 @@ for i in range(num_episodes):
 #         #print (sm)
 #         a = tuple((om, a[1]))
         s1, reward, done, _ = env.step(m)
-        om = -om
+        if (om == 2):
+            reward = -reward
+        om = 3 - om
         env.render()
         total_reward += reward
         s = s1
