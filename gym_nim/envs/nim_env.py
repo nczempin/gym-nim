@@ -2,7 +2,7 @@ import gym
 from gym import spaces
 import numpy as np
 
-class TicTacToeEnv(gym.Env):
+class NimEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self):

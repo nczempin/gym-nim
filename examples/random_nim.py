@@ -1,6 +1,6 @@
 import gym
 import numpy as np
-import gym_tic_tac_toe
+import gym_nim
 import random
 
 
@@ -14,7 +14,7 @@ def random_move(moves, p):
     m = random.choice(moves)
     return m
 
-env = gym.make('tic_tac_toe-v0')
+env = gym.make('nim-v0')
 
 num_episodes = 2000
 num_steps_per_episode = 10

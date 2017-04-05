@@ -5,7 +5,7 @@
 import gym
 import numpy as np
 import queue
-import gym_tic_tac_toe
+import gym_nim
 import random
 
 
@@ -166,7 +166,7 @@ def train(env):
     print ("Final Q-Table Values")
     return Q
 
-env = gym.make('tic_tac_toe-v0')
+env = gym.make('nim-v0')
 
 Q = train(env)
 
