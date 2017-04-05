@@ -65,6 +65,7 @@ def random_move(moves, p):
     return m
 
 
+
 env = gym.make('tic_tac_toe-v0')
 asp = env.action_space
 print (asp)
@@ -77,7 +78,7 @@ print (os)
 Q = np.zeros([os.n,asp.n])
 # Set learning parameters
 lr = .85
-y = .99
+y = .99 # discount factor.
 num_episodes = 10000
 ROLLING_ELEMENTS = 1000.0
 #create lists to contain total rewards and steps per episode
@@ -87,6 +88,7 @@ q = queue.Queue(ROLLING_ELEMENTS)
 for i in range(num_episodes):
     #Reset environment and get first new observation
     s = env.reset()
+    maximizing_player = 1 #TODO randomize; for that we need to generalize the reward function
     rAll = 0
     d = False
     j = 0
@@ -112,27 +114,28 @@ for i in range(num_episodes):
             break
         elif len(moves) == 1:
             a = moves[0]
-        if (om == 1):
-            a = pick_max(choices, moves)
+        else:
+            if (om == maximizing_player):
+                a = pick_max(choices, moves)
             
 #            a = [om, np.argmax(choices)]
-        else: # om == -1
+            else: # om == -1
 #            a = [om, np.argmin(choices)]
-            a= pick_min(choices, moves)
+                a= pick_min(choices, moves)
             
             #a = random_move(moves, om)
           
         #Get new state and reward from environment
 #        print('action: ', a)
-        s1,r,d,_ = env.step(a)
+        s1,reward,d,_ = env.step(a)
         hs1 = hash_ttt(s1)
 #        print ('new state: ', s1, " (", hs1, "), reward: ", r)
-        rAll += r
+        rAll += reward
         #Update Q-Table with new knowledge
-        if (om == 1):
-            Q[hs,a] = Q[hs,a] + lr*(r + y*np.max(Q[hs1,:]) - Q[hs,a])
+        if (om == maximizing_player):
+            Q[hs,a] = Q[hs,a] + lr*(reward + y*np.max(Q[hs1,:]) - Q[hs,a])
         else:
-            Q[hs,a] = Q[hs,a] + lr*(r + y*np.min(Q[hs1,:]) - Q[hs,a])
+            Q[hs,a] = Q[hs,a] + lr*(reward + y*np.min(Q[hs1,:]) - Q[hs,a])
           
         s = s1
         if (d == True):
