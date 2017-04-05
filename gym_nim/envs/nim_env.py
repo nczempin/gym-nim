@@ -6,60 +6,64 @@ class NimEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self):
-        self.action_space = spaces.Discrete(9)
-        self.observation_space = spaces.Discrete(512*512*2) # flattened
+        self.action_space = spaces.Discrete(3)
+        self.observation_space = spaces.Discrete(8*8*8*2) # flattened
     def _step(self, action):
         done = False
         reward = 0
 
-        p, square = action
         
-       # p = p*2 - 1
+        pile, count = action
+       
         # check move legality
         board = self.state['board']
-        proposed = board[square]
         om = self.state['on_move']
-        if (proposed != 0):  # wrong player, not empty
-            print("illegal move ", action, ". (square occupied): ", square)
+        if (pile < 0 or pile > 2): #non-existent pile TODO generalize
+            print("illegal move ", action, ".")
             done = True
-            reward = -1 * om  # player who did NOT make the illegal move
-        if (p != om):  # wrong player, not empty
-            print("illegal move  ", action, " not on move: ", p)
-            done = True
-            reward = -1 * om  # player who did NOT make the illegal move
+            reward = -2
         else:
-            board[square] = p
-            self.state['on_move'] = -p
-
-        # check game over
-        for i in range(3):
-            # horizontals and verticals
-            if ((board[i * 3] == p and board[i * 3 + 1] == p and board[i * 3 + 2 ] == p)
-                or (board[i + 0] == p and board[i + 3] == p and board[i + 6] == p)):
-                reward = p
+            pile_size = board[pile]
+            if (count > pile_size):
+                print("illegal move  ", action, ". taking too many")
                 done = True
-                break
+                reward = -2
+            else:
+                # swap who's on move
+                self.state['on_move'] = 3 - self.state['on_move'] # alternate between 1 and 2
+                board[pile] -= count
+                # check game over
+                pieces_left = 0
                 
+                if (board[0] == 0 and board[1] == 0 and board[2] == 0): #TODO generalize
+                    done = True
+                    reward = -1
+
         return self.state, reward, done, {}
     def _reset(self):
         self.state = {}
-        self.state['board'] = [0, 0, 0, 0, 0, 0, 0, 0, 0]
-        self.state['on_move'] = 1
+        self.state['board'] = [7, 5, 3] #TODO randomize
+        self.state['on_move'] = 1 #TODO randomize?
         return self.state
     def _render(self, mode='human', close=False):
         if close:
             return
         print("on move: " , self.state['on_move'])
-        for i in range (9):
+        for i in range (3):
             print (self.state['board'][i], end=" ")
         print()
     def move_generator(self):
         moves = []
-        for i in range (9):
-            
-            if (self.state['board'][i] == 0):
-                p = self.state['on_move']
-                m = [p, i]
+        for i in range (3):
+            #TODO generalize; this is not elegant
+            if (self.state['board'][i] > 0):
+                m = [i, 1]
+                moves.append(m)
+            if (self.state['board'][i] > 1):
+                m = [i, 2]
+                moves.append(m)
+            if (self.state['board'][i] > 2):
+                m = [i, 3]
                 moves.append(m)
         return moves
                 
