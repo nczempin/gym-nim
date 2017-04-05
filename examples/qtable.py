@@ -8,12 +8,16 @@ import queue
 import gym_nim
 import random
 
+def hash_nim_move(move):
+    a = move[0]
+    b = move[1]
+    return 3 * a + b -1
 
 def pick_min(choices, moves):
     minc = +99999999
     for i in range(len(moves)):
         m = moves[i]
-        c = choices[0][m[1]]
+        c = choices[0][hash_nim_move(m)]
         if (c < minc):
             best_move = m
             minc = c
@@ -24,7 +28,7 @@ def pick_max(choices, moves):
     maxc = -99999999
     for i in range(len(moves)):
         m = moves[i]
-        c = choices[0][m[1]]
+        c = choices[0][m[0]]
     #               print ("choice: ", c)
         if (c > maxc):
             best_move = m
@@ -32,7 +36,7 @@ def pick_max(choices, moves):
     
     return best_move
 
-def hash_ttt(state):
+def hash_nim_state(state):
     # of course this is just for the upper bound;
     # we should really take advantage of the redundancies
     # to reduce the number of states to 765 for the board
@@ -41,28 +45,23 @@ def hash_ttt(state):
     
     # print("hashing state: ", state)
     retval = 0
-    low9 = 0
-    high9 = 0
-    lowmult = 2
-    highmult = 1024
+    
+    #TODO: sort the values to take advantage of equivalence
+    
+
     board = state.get('board')
-    if (state['on_move'] == -1):
+    if (state['on_move'] == 2):
         retval = 1
-    for i in range(9):
-        if (board[i] != 0):
-            retval |= lowmult
-            if (board[i] < 0):
-                retval |= highmult
-        lowmult *= 2
-        highmult *= 2
+        
+    retval += (board[0]) << 1
+    retval += ((board[1]) << (1 + 3))
+    retval += ((board[2]) << (1 + 3 + 3))
+    if (retval > 1023):
+        print("invalid: ", retval)
+        print (board)
     return retval
-def random_plus_middle_move(moves, p):
-    if ([p, 4] in moves):
-        m = [p, 4]
-    else:
-        m = random_move(moves, p)
-    return m
-def random_move(moves, p):
+
+def random_move(moves):
     m = random.choice(moves)
     return m
 def choose_move(Q, hs, env, om, maximizing_player, bonus):
@@ -80,7 +79,8 @@ def choose_move(Q, hs, env, om, maximizing_player, bonus):
 #            a = [om, np.argmax(choices)]
         else:  # om == -1
 #            a = [om, np.argmin(choices)]
-            a = pick_min(choices, moves)
+            #a = pick_min(choices, moves)
+            a = random_move(moves)
             
     return a
 
@@ -107,6 +107,7 @@ def train(env):
     for i in range(num_episodes):
         # Reset environment and get first new observation
         s = env.reset()
+        env.set_board([2,1,1])
         maximizing_player = 1  # TODO randomize; for that we need to generalize the reward function
         rAll = 0
         d = False
@@ -123,7 +124,7 @@ def train(env):
             bonus = pick * puck
      #       print ("pick: ", pick, ", puck: ", puck, ", bonus: ", bonus)
             om = s['on_move']
-            hs = hash_ttt(s)
+            hs = hash_nim_state(s)
             a = choose_move(Q, hs, env, om, maximizing_player, bonus)
             if (not a):
                 break
@@ -132,7 +133,9 @@ def train(env):
             # Get new state and reward from environment
     #        print('action: ', a)
             s1, reward, d, _ = env.step(a)
-            hs1 = hash_ttt(s1)
+            if (om == 2):
+                reward = - reward
+            hs1 = hash_nim_state(s1)
     #        print ('new state: ', s1, " (", hs1, "), reward: ", r)
             rAll += reward
             # Update Q-Table with new knowledge
@@ -157,6 +160,11 @@ def train(env):
                 q.put(it)
             if (i % 500 == 0):
                 print (rolling_rAll / ROLLING_ELEMENTS)
+                for i in range(os.n):
+                    for j in range (asp.n):
+                        q2 = Q[i][j]
+                        if (q2 != 0):
+                            print (i, ", ", j, ": ",q2)
         rList.append(rAll)
     #     if (rolling_rAll >= 9):
     #       print ("good at ", i)
@@ -171,5 +179,10 @@ env = gym.make('nim-v0')
 Q = train(env)
 
 print (Q)
+for i in range(os.n):
+    for j in range (asp.n):
+        q = Q[i][j]
+        if (q != 0):
+            print (i, ", ", j, ": ",q)
 
 s = env.reset()
