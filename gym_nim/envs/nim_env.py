@@ -6,7 +6,7 @@ class NimEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self):
-        self.action_space = spaces.Discrete(3)
+        self.action_space = spaces.Discrete(9)
         self.observation_space = spaces.Discrete(8*8*8*2) # flattened
     def _step(self, action):
         done = False
@@ -45,6 +45,9 @@ class NimEnv(gym.Env):
         self.state['board'] = [7, 5, 3] #TODO randomize
         self.state['on_move'] = 1 #TODO randomize?
         return self.state
+    
+    def set_board(self, board):
+        self.state['board'] = board
     def _render(self, mode='human', close=False):
         if close:
             return
@@ -66,4 +69,5 @@ class NimEnv(gym.Env):
                 m = [i, 3]
                 moves.append(m)
         return moves
-                
+    
+    
