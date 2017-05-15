@@ -1,0 +1,19 @@
+language: python
+python:
+  - 2.6
+  - 2.7
+  - 3.2
+  - 3.3
+  - 3.4
+  - 3.5
+  - 3.6
+build:
+  ci:
+    #Create folders for test and code coverage
+    - mkdir -p shippable/testresults
+    - mkdir -p shippable/codecoverage
+
+    #Run test and code coverage and output results to the right folder
+    - nosetests test.py --with-xunit --xunit-file=shippable/testresults/nosetests.xml
+    - which python && coverage run --branch tests.py
+    - which python && coverage xml -o shippable/codecoverage/coverage.xml tests.py
