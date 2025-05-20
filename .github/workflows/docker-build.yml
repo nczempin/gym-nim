@@ -1,0 +1,15 @@
+name: Docker CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build Docker image
+        run: docker build -t gym-nim .
+      - name: Run tests
+        run: docker run --rm gym-nim
