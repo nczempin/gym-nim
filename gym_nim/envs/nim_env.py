@@ -20,8 +20,8 @@ class NimEnv(gym.Env):
         reward = 0
         
         # Validate action format
-        if action is None or len(action) != 2:
-            raise ValueError(f"Invalid action format: {action}. Expected (pile, count)")
+        if not isinstance(action, (tuple, list)) or len(action) != 2:
+            raise ValueError(f"Invalid action format: {action}. Expected a tuple or list of (pile, count)")
         
         pile, count = action
         # count is already 1-3 from the examples
