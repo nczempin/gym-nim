@@ -57,7 +57,7 @@ class TestExamples:
         assert qtable.hash_nim_move([2, 3]) == 8
         
         # Test hash_nim_state function
-        import gym
+        import gymnasium as gym
         import gym_nim
         env = gym.make('nim-v0')
         state = env.reset()
@@ -83,7 +83,7 @@ class TestExamples:
         qtable = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(qtable)
         
-        import gym
+        import gymnasium as gym
         import gym_nim
         env = gym.make('nim-v0')
         
@@ -147,7 +147,7 @@ class TestExamples:
         """Test that random_nim example runs without errors (quick version)."""
         # Run a modified version with fewer episodes
         test_script = '''
-import gym
+import gymnasium as gym
 import gym_nim
 import random
 import sys

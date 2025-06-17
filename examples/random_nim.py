@@ -1,6 +1,6 @@
-import gym
+import gymnasium as gym
 import numpy as np
-import gym_nim
+import gymnasium as gym_nim
 import random
 
 def random_move(moves, p):

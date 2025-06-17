@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-import gym
+import gymnasium as gym
 import gym_nim
 
 

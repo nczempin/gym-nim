@@ -38,7 +38,7 @@ jobs:
         pip install "setuptools<70"
         # Install test dependencies
         pip install pytest pytest-cov
-        # Try to install the package
+        # Install the package with gymnasium
         pip install -e .
         # Ensure we have numpy for tests
         pip install numpy

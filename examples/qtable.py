@@ -2,10 +2,10 @@
 # "Simple Reinforcement Learning with Tensorflow Part 0: Q-Learning with Tables and Neural Networks" by Arthur Juliani
 
 
-import gym
+import gymnasium as gym
 import numpy as np
 import queue
-import gym_nim
+import gymnasium as gym_nim
 import random
 
 def hash_nim_move(move):
