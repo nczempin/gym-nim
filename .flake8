@@ -1,0 +1,19 @@
+[flake8]
+max-line-length = 127
+max-complexity = 10
+exclude = 
+    .git,
+    __pycache__,
+    build,
+    dist,
+    .eggs,
+    *.egg-info,
+    venv,
+    .venv
+ignore = 
+    # Missing whitespace after ','
+    E231,
+    # Line too long - we use max-line-length instead
+    E501,
+    # Missing whitespace around operator
+    E225
