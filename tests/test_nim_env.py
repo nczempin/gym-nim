@@ -124,8 +124,8 @@ class TestNimEnv:
     def test_step_before_reset(self):
         """Test that stepping before reset raises an error."""
         new_env = gym.make('nim-v0')
-        # In the original code, this causes AttributeError
-        with pytest.raises(AttributeError):
+        # The code raises ValueError for stepping before reset
+        with pytest.raises(ValueError, match="Cannot step before reset"):
             new_env.step([0, 1])
         new_env.close()
     
@@ -133,16 +133,16 @@ class TestNimEnv:
         """Test various invalid action formats."""
         self.env.reset()
         
-        # Test None action - original code doesn't validate
-        with pytest.raises(TypeError):
+        # Test None action
+        with pytest.raises(ValueError, match="Invalid action format"):
             self.env.step(None)
         
-        # Test wrong length action - original code doesn't validate
-        with pytest.raises(ValueError):
+        # Test wrong length action
+        with pytest.raises(ValueError, match="Invalid action format"):
             self.env.step([0])
         
-        # Test action with too many elements - original code doesn't validate
-        with pytest.raises(ValueError):
+        # Test action with too many elements
+        with pytest.raises(ValueError, match="Invalid action format"):
             self.env.step([0, 1, 2])
     
     def test_player_alternation(self):
@@ -155,3 +155,143 @@ class TestNimEnv:
         
         self.env.step([1, 1])
         assert self.env.state['on_move'] == 1
+
+    def test_zero_count_action(self):
+        """Test that taking 0 pieces is invalid."""
+        self.env.reset()
+        state, reward, done, info = self.env.step([0, 0])
+        
+        assert reward == -2  # Penalty for illegal move
+        assert done  # Game ends on illegal move
+
+    def test_negative_count_action(self):
+        """Test that taking negative pieces is invalid."""
+        self.env.reset()
+        state, reward, done, info = self.env.step([0, -1])
+        
+        assert reward == -2  # Penalty for illegal move
+        assert done  # Game ends on illegal move
+
+    def test_negative_pile_index(self):
+        """Test that negative pile index is invalid."""
+        self.env.reset()
+        state, reward, done, info = self.env.step([-1, 1])
+        
+        assert reward == -2  # Penalty for illegal move
+        assert done  # Game ends on illegal move
+
+    def test_state_immutability_after_illegal_move(self):
+        """Test that state doesn't change after illegal move."""
+        self.env.reset()
+        original_board = self.env.state['board'].copy()
+        original_player = self.env.state['on_move']
+        
+        # Make illegal move
+        self.env.step([0, 10])
+        
+        # State should be unchanged except for game end
+        np.testing.assert_array_equal(self.env.state['board'], original_board)
+        assert self.env.state['on_move'] == original_player
+
+    def test_render_without_reset(self):
+        """Test rendering when game not started."""
+        import io
+        import sys
+        
+        new_env = gym.make('nim-v0')
+        
+        # Capture stdout to verify output
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        
+        try:
+            # Should not crash, just print a message
+            new_env.render()
+            
+            # Get the output
+            output = captured_output.getvalue()
+            
+            # Verify the game is not started message appears
+            assert "Game not started" in output or "reset" in output.lower()
+        finally:
+            # Always restore stdout
+            sys.stdout = sys.__stdout__
+            new_env.close()
+
+    def test_move_generator_empty_game(self):
+        """Test move generation when all piles are empty."""
+        self.env.reset()
+        self.env.set_board([0, 0, 0])
+        moves = self.env.move_generator()
+        assert len(moves) == 0
+
+    def test_move_generator_single_piece(self):
+        """Test move generation with single pieces."""
+        self.env.reset()
+        self.env.set_board([1, 0, 1])
+        moves = self.env.move_generator()
+        
+        expected_moves = [[0, 1], [2, 1]]
+        assert len(moves) == 2
+        assert [0, 1] in moves
+        assert [2, 1] in moves
+
+    def test_set_board_before_reset(self):
+        """Test setting board before reset."""
+        new_env = gym.make('nim-v0')
+        new_env.set_board([1, 2, 3])
+        
+        # Should initialize state if not present
+        assert new_env.state is not None
+        np.testing.assert_array_equal(new_env.state['board'], [1, 2, 3])
+        assert new_env.state['on_move'] == 1
+        new_env.close()
+
+    def test_action_space_properties(self):
+        """Test action and observation space properties."""
+        assert hasattr(self.env.action_space, 'n')
+        assert hasattr(self.env.observation_space, 'n')
+        assert self.env.action_space.n == 9  # As defined in the environment
+        assert self.env.observation_space.n == 8*8*8*2  # As defined in the environment
+
+    def test_complete_game_scenario(self):
+        """Test a complete game from start to finish."""
+        self.env.reset()
+        moves_made = 0
+        max_moves = 50  # Safety limit
+        
+        while moves_made < max_moves:
+            moves = self.env.move_generator()
+            if not moves:
+                break
+                
+            # Make a random valid move
+            action = moves[0]  # Take first available move
+            state, reward, done, info = self.env.step(action)
+            moves_made += 1
+            
+            if done:
+                # Game should end with someone losing
+                assert reward == -1, f"Expected losing reward, got {reward}"
+                break
+                
+        assert moves_made < max_moves, "Game should end within reasonable moves"
+
+    def test_reward_structure(self):
+        """Test all possible reward values."""
+        self.env.reset()
+        
+        # Normal move should give 0 reward
+        state, reward, done, info = self.env.step([0, 1])
+        assert reward == 0
+        
+        # Reset for illegal move test
+        self.env.reset()
+        state, reward, done, info = self.env.step([0, 10])
+        assert reward == -2  # Illegal move penalty
+        
+        # Test losing (this requires specific setup)
+        self.env.reset()
+        self.env.set_board([1, 0, 0])  # Only one piece left
+        state, reward, done, info = self.env.step([0, 1])
+        assert reward == -1  # Losing player
