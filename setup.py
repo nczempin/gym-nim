@@ -14,7 +14,7 @@ requirements = read_requirements(os.path.join(here, 'requirements.txt'))
 
 setup(
     name='gym_nim',
-    version='0.0.1',
+    version='0.1.0',
     description='A Nim game environment for OpenAI Gym',
     url="https://github.com/nczempin/gym-nim",
     author='Nicolai Czempin',
