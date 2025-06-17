@@ -195,10 +195,28 @@ class TestNimEnv:
 
     def test_render_without_reset(self):
         """Test rendering when game not started."""
+        import io
+        import sys
+        
         new_env = gym.make('nim-v0')
-        # Should not crash, just print a message
-        new_env.render()
-        new_env.close()
+        
+        # Capture stdout to verify output
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        
+        try:
+            # Should not crash, just print a message
+            new_env.render()
+            
+            # Get the output
+            output = captured_output.getvalue()
+            
+            # Verify the game is not started message appears
+            assert "Game not started" in output or "reset" in output.lower()
+        finally:
+            # Always restore stdout
+            sys.stdout = sys.__stdout__
+            new_env.close()
 
     def test_move_generator_empty_game(self):
         """Test move generation when all piles are empty."""

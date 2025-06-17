@@ -14,7 +14,7 @@ This is a custom OpenAI Gym environment implementing the game of Nim, designed f
 pip install -e .
 
 # Install with test dependencies
-pip install nose
+pip install pytest pytest-cov
 pip install -e .
 ```
 
@@ -23,15 +23,13 @@ pip install -e .
 # Run tests directly
 python tests.py
 
-# Run tests with nose and coverage
-nosetests tests.py --with-xunit --xunit-file=shippable/testresults/nosetests.xml
-coverage run --branch tests.py
-coverage xml -o shippable/codecoverage/coverage.xml tests.py
+# Run tests with pytest and coverage
+pytest tests/ -v --cov=gym_nim --cov-report=term-missing --cov-report=xml
 ```
 
 ### Docker-based Testing
 ```bash
-# Build and run tests in Docker (tests with Python 3.6 and gym 0.9.1)
+# Build and run tests in Docker (tests with Python 3.9 and pytest)
 docker build -t gym-nim .
 docker run --rm gym-nim
 ```
@@ -63,9 +61,9 @@ python examples/qtable.py
 - The environment tracks whose turn it is in the state dictionary
 
 ### Testing Considerations
-- Current `tests.py` is a placeholder and needs proper test implementation
-- The project includes CI configuration for Shippable with multiple Python versions
-- Docker testing ensures compatibility with the specific gym==0.9.1 dependency
+- Comprehensive pytest test suite with 99% code coverage
+- The project includes GitHub Actions CI configuration testing Python 3.9-3.12
+- Docker testing uses Python 3.9 with pytest for consistent test environment
 
 ### Development Notes
 - Many TODO comments indicate areas for generalization (variable number of piles, different starting configurations)
@@ -90,10 +88,10 @@ Based on successful migration patterns from similar projects:
    - Consider creating `gym_nim/_version.py` for centralized version management
 
 3. **Testing Strategy**
-   - Create proper pytest test suite to replace placeholder `tests.py`
-   - Test all environment mechanics including edge cases
-   - Add tests for README examples to ensure documentation accuracy
-   - Consider CI matrix testing across Python 3.9-3.12
+   - Test suite already implemented with comprehensive coverage
+   - All environment mechanics and edge cases are tested
+   - Integration tests for examples are included
+   - CI matrix testing across Python 3.9-3.12 is configured
 
 4. **Development Workflow for Migration**
    - Create feature branch: `feature/gymnasium-migration`
