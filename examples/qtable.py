@@ -87,10 +87,7 @@ def choose_move(Q, hs, env, om, maximizing_player, bonus):
 def train(env):
 
     action_space = env.action_space
-    print (action_space)
-    
     observation_space = env.observation_space
-    print (observation_space)
     
     
     # Initialize table with all zeros
