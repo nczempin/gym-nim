@@ -1,2 +1,2 @@
-gym==0.9.1
-numpy>=1.10.4
+gymnasium>=1.0.0
+numpy>=1.21.0
