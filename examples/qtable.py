@@ -86,15 +86,12 @@ def choose_move(Q, hs, env, om, maximizing_player, bonus):
 
 def train(env):
 
-    asp = env.action_space
-    print (asp)
-    
-    os = env.observation_space
-    print (os)
+    action_space = env.action_space
+    observation_space = env.observation_space
     
     
     # Initialize table with all zeros
-    Q = np.zeros([os.n, asp.n])
+    Q = np.zeros([observation_space.n, action_space.n])
     # Set learning parameters
     lr = .85  # learning rate
     y = .99  # discount factor.
@@ -119,7 +116,7 @@ def train(env):
             # Choose an action by greedily (with noise) picking from Q table
       #         print ("s: ", s)
     #         print ("hs: ", hs)
-            pick = np.random.randn(1, asp.n)
+            pick = np.random.randn(1, action_space.n)
             puck = (1. / (i + 1))
             bonus = pick * puck
      #       print ("pick: ", pick, ", puck: ", puck, ", bonus: ", bonus)
@@ -160,8 +157,8 @@ def train(env):
                 q.put(it)
             if (i % 500 == 0):
                 print (rolling_rAll / ROLLING_ELEMENTS)
-                for i in range(os.n):
-                    for j in range (asp.n):
+                for i in range(observation_space.n):
+                    for j in range (action_space.n):
                         q2 = Q[i][j]
                         if (q2 != 0):
                             print (i, ", ", j, ": ",q2)
@@ -179,8 +176,11 @@ env = gym.make('nim-v0')
 Q = train(env)
 
 print (Q)
-for i in range(os.n):
-    for j in range (asp.n):
+# Access spaces directly from env since os and asp are local to train()
+observation_space = env.observation_space
+action_space = env.action_space
+for i in range(observation_space.n):
+    for j in range(action_space.n):
         q = Q[i][j]
         if (q != 0):
             print (i, ", ", j, ": ",q)
