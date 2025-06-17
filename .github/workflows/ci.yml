@@ -36,6 +36,8 @@ jobs:
         python -m pip install --upgrade pip
         # Install setuptools first for compatibility
         pip install "setuptools<70"
+        # Install test dependencies
+        pip install pytest pytest-cov
         # Try to install the package
         pip install -e .
         # Ensure we have numpy for tests
