@@ -44,7 +44,7 @@ jobs:
         # Install gym and numpy directly
         pip install "gym==0.9.1" numpy
         # Try to install the package
-        pip install -e . || echo "Installation might have warnings"
+        pip install -e .
     
     - name: Test random_nim example
       run: |
