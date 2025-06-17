@@ -37,7 +37,7 @@ jobs:
         # Install setuptools first for compatibility
         pip install "setuptools<70"
         # Try to install the package
-        pip install -e . || echo "Installation failed, continuing anyway"
+        pip install -e .
         # Ensure we have numpy for tests
         pip install numpy
     
