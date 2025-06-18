@@ -103,3 +103,47 @@ Based on successful migration patterns from similar projects:
    - Consider implementing centralized version management
    - Create update script to sync versions across setup.py and requirements files
    - Document supported Python version range (recommend 3.9-3.12)
+
+## Migration Lessons Learned (December 2024)
+
+### Successful Gymnasium Migration (v0.1.0 → v0.2.0)
+The gymnasium migration was completed successfully with these key insights:
+
+1. **OrderEnforcing Wrapper Issue**
+   - Gymnasium's OrderEnforcing wrapper blocks access to custom methods like `move_generator()` and `set_board()`
+   - Solution: Use `env.unwrapped.custom_method()` in tests and examples
+   - This is the #1 gotcha when migrating custom gym environments
+
+2. **API Changes Required**
+   - `_step()`, `_reset()`, `_render()` → `step()`, `reset()`, `render()` (remove underscores)
+   - `reset()` must return `(observation, info)` tuple instead of just observation
+   - `step()` must return `(observation, reward, terminated, truncated, info)` instead of `(observation, reward, done, info)`
+   - Add `truncated=False` for most game environments (games typically terminate, not truncate)
+
+3. **Testing Strategy That Worked**
+   - Use virtual environments for proper dependency isolation: `python3 -m venv venv && source venv/bin/activate`
+   - Run tests frequently during migration (caught 27 → 0 failures systematically)
+   - Docker testing ensures production environment compatibility
+   - Created comprehensive test suite with 31 tests achieving 94% coverage
+
+4. **CI Optimization**
+   - Default to testing only Python 3.12 for speed
+   - Use `workflow_dispatch` for on-demand full matrix testing (3.9-3.12)
+   - Separate workflows for examples vs core testing
+   - Address warnings systematically via GitHub issues
+
+5. **Documentation is Critical**
+   - Update all docstrings to reflect new API signatures
+   - Fix examples in class documentation
+   - Address code review comments promptly
+   - Keep CLAUDE.md updated with migration insights
+
+## Claude Code Workflow Hints
+
+- Prefer writing minimal, focused code changes
+- Always run tests after making modifications
+- Use feature branches for substantial refactoring
+- Maintain clear, descriptive commit messages
+- Document significant architectural decisions
+- Use virtual environments to avoid system package conflicts
+- Test with both local venv and Docker for full compatibility
