@@ -1,0 +1,55 @@
+name: Full Python Matrix Testing
+
+on:
+  workflow_dispatch:  # Manual trigger only
+  schedule:
+    # Run weekly on Sundays at 2 AM UTC
+    - cron: '0 2 * * 0'
+
+jobs:
+  test-all-versions:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Test all supported Python versions
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        # Install setuptools first for compatibility
+        pip install "setuptools<70"
+        # Install test dependencies
+        pip install pytest pytest-cov
+        # Install the package with gymnasium
+        pip install -e .
+        # Ensure we have numpy for tests
+        pip install numpy
+    
+    - name: Run tests
+      run: |
+        # Run the basic test file
+        python tests.py
+    
+    - name: Upload coverage to Codecov (3.12 only)
+      if: matrix.python-version == '3.12'
+      uses: codecov/codecov-action@v3
+      with:
+        fail_ci_if_error: false
