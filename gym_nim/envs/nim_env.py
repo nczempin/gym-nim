@@ -1,5 +1,5 @@
-import gym
-from gym import spaces
+import gymnasium as gym
+from gymnasium import spaces
 import numpy as np
 
 class NimEnv(gym.Env):
@@ -54,7 +54,7 @@ class NimEnv(gym.Env):
         # Observation space: simplified for old gym version
         self.observation_space = spaces.Discrete(8*8*8*2)  # flattened board + player
         self.state = None
-    def _step(self, action):
+    def step(self, action):
         """Execute one time step within the environment.
         
         Parameters
@@ -131,8 +131,9 @@ class NimEnv(gym.Env):
                 # Game continues, switch player
                 self.state['on_move'] = 3 - self.state['on_move']
         
-        return self.state, reward, done, {}
-    def _reset(self):
+        # In gymnasium: (observation, reward, terminated, truncated, info)
+        return self.state, reward, done, False, {}
+    def reset(self, seed=None, options=None):
         """Reset the environment to the initial state.
         
         Returns
@@ -152,7 +153,8 @@ class NimEnv(gym.Env):
             'board': np.array([7, 5, 3], dtype=np.int32),
             'on_move': 1
         }
-        return self.state
+        # In gymnasium: reset returns (observation, info)
+        return self.state, {}
     
     def set_board(self, board):
         """Set a custom board configuration.
@@ -174,7 +176,7 @@ class NimEnv(gym.Env):
             self.state = {'board': None, 'on_move': 1}
         self.state['board'] = np.array(board, dtype=np.int32)
     
-    def _render(self, mode='human', close=False):
+    def render(self):
         """Render the current game state to the console.
         
         Parameters
@@ -191,8 +193,6 @@ class NimEnv(gym.Env):
         Player 1's turn
         Piles: [0]:7 [1]:5 [2]:3
         """
-        if close:
-            return
         if self.state is None:
             print("Game not started. Call reset() first.")
             return

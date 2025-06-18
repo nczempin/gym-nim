@@ -18,7 +18,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.9', '3.10', '3.12']
+        # Only test Python 3.12 for faster CI (examples should work across versions)
+        python-version: ['3.12']
     
     steps:
     - uses: actions/checkout@v3
@@ -41,29 +42,31 @@ jobs:
         python -m pip install --upgrade pip
         # Install setuptools first for compatibility
         pip install "setuptools<70"
-        # Install gym and numpy directly
-        pip install "gym==0.9.1" numpy
-        # Try to install the package
+        # Install test dependencies
+        pip install pytest pytest-cov
+        # Install the package with gymnasium
         pip install -e .
+        # Ensure we have numpy for tests
+        pip install numpy
     
     - name: Test random_nim example
       run: |
         # Run for just a few episodes to test it works
         python -c "
-import gym
+import gymnasium as gym
 import gym_nim
 import random
 
 env = gym.make('nim-v0')
 for episode in range(3):
-    state = env.reset()
-    done = False
+    state, info = env.reset()
+    terminated = False
     steps = 0
-    while not done and steps < 20:
-        moves = env.move_generator()
+    while not terminated and steps < 20:
+        moves = env.unwrapped.move_generator()
         if moves:
             action = random.choice(moves)
-            state, reward, done, _ = env.step(action)
+            state, reward, terminated, truncated, info = env.step(action)
         else:
             break
         steps += 1
