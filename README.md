@@ -1,6 +1,11 @@
 # gym-nim
 
-An OpenAI Gym environment for the classic game of Nim, designed for multi-agent reinforcement learning experiments.
+[![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://python.org)
+[![Gymnasium](https://img.shields.io/badge/gymnasium-1.0%2B-green.svg)](https://gymnasium.farama.org/)
+[![CI](https://github.com/nczempin/gym-nim/actions/workflows/ci.yml/badge.svg)](https://github.com/nczempin/gym-nim/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+A Gymnasium (formerly OpenAI Gym) environment for the classic game of Nim, designed for multi-agent reinforcement learning experiments.
 
 ## What is Nim?
 
@@ -44,7 +49,7 @@ The player who takes the **last piece loses** (normal play convention).
 ## Requirements
 
 - **Python 3.9-3.12** (tested on all versions)
-- **OpenAI Gym 0.9.1** (legacy version for compatibility)
+- **Gymnasium 1.0+** (modern RL library)
 - **NumPy** (for array operations)
 - **pytest** (for running tests)
 
@@ -65,31 +70,31 @@ pip install pytest pytest-cov
 ## Quick Start
 
 ```python
-import gym
+import gymnasium as gym
 import gym_nim
 
 # Create and reset the environment
 env = gym.make('nim-v0')
-state = env.reset()
+state, info = env.reset()
 print(state)  # {'board': array([7, 5, 3]), 'on_move': 1}
 
 # Player 1 takes 2 pieces from pile 0
-state, reward, done, info = env.step([0, 2])
+state, reward, terminated, truncated, info = env.step([0, 2])
 env.render()
 # Player 2's turn
 # Piles: [0]:5 [1]:5 [2]:3
 
 # Get all legal moves for current player
-moves = env.move_generator()
+moves = env.unwrapped.move_generator()
 print(f"Legal moves: {moves}")
 
 # Play until game ends
-while not done:
+while not terminated:
     # Simple strategy: take first legal move
     if moves:
         action = moves[0]
-        state, reward, done, info = env.step(action)
-        moves = env.move_generator()
+        state, reward, terminated, truncated, info = env.step(action)
+        moves = env.unwrapped.move_generator()
         
 print(f"Game over! Player {state['on_move']} loses with reward {reward}")
 ```
@@ -134,17 +139,62 @@ docker run --rm gym-nim
 
 The main class `NimEnv` provides these methods:
 
-- **`reset()`**: Start a new game
-- **`step(action)`**: Take an action and get the result
+- **`reset(seed=None, options=None)`**: Start a new game, returns `(state, info)`
+- **`step(action)`**: Take an action, returns `(state, reward, terminated, truncated, info)`
 - **`render()`**: Display the current game state
-- **`move_generator()`**: Get all legal moves
-- **`set_board(board)`**: Set a custom board position
+- **`move_generator()`**: Get all legal moves (access via `env.unwrapped.move_generator()`)
+- **`set_board(board)`**: Set a custom board position (access via `env.unwrapped.set_board()`)
+
+### Important Notes
+
+- **Gymnasium Wrappers**: Gymnasium wraps environments in safety wrappers. To access custom methods like `move_generator()` and `set_board()`, use `env.unwrapped`
+- **API Changes**: This environment follows the Gymnasium API where `reset()` returns a tuple and `step()` returns 5 values including `terminated` and `truncated`
 
 See the [API documentation](gym_nim/envs/nim_env.py) for detailed method descriptions and examples.
 
+## Migrating from gym to gymnasium
+
+Version 0.2.0 migrated from OpenAI Gym to Gymnasium. If you're upgrading:
+
+1. **Import changes**:
+   ```python
+   # Old
+   import gym
+   
+   # New
+   import gymnasium as gym
+   ```
+
+2. **Reset returns a tuple**:
+   ```python
+   # Old
+   state = env.reset()
+   
+   # New
+   state, info = env.reset()
+   ```
+
+3. **Step returns 5 values**:
+   ```python
+   # Old
+   state, reward, done, info = env.step(action)
+   
+   # New
+   state, reward, terminated, truncated, info = env.step(action)
+   ```
+
+4. **Custom methods need unwrapped**:
+   ```python
+   # Old
+   moves = env.move_generator()
+   
+   # New
+   moves = env.unwrapped.move_generator()
+   ```
+
 ## Future Enhancements
 
-- Migration to modern Gymnasium library (planned for v0.2.0)
 - Variable pile configurations
 - Different game variants (misère vs normal play)
 - Advanced opponent strategies for training
+- Parallel environment support for faster training
