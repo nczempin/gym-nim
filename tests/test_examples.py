@@ -60,7 +60,7 @@ class TestExamples:
         import gymnasium as gym
         import gym_nim
         env = gym.make('nim-v0')
-        state = env.reset()
+        state, info = env.reset()
         
         # Should return a valid hash
         hash_val = qtable.hash_nim_state(state)
@@ -98,14 +98,14 @@ class TestExamples:
             Q = np.zeros([observation_space.n, action_space.n])
             # Just do 10 episodes for testing
             for i in range(10):
-                s = env.reset()
+                s, info = env.reset()
                 done = False
                 steps = 0
                 while not done and steps < 10:
-                    moves = env.move_generator()
+                    moves = env.unwrapped.move_generator()
                     if moves:
                         action = moves[0]
-                        s, reward, done, _ = env.step(action)
+                        s, reward, done, truncated, _ = env.step(action)
                     steps += 1
             return Q
         
@@ -161,14 +161,14 @@ try:
     
     # Run just 2 episodes for testing
     for episode in range(2):
-        state = env.reset()
-        done = False
+        state, info = env.reset()
+        terminated = False
         steps = 0
-        while not done and steps < 20:
-            moves = env.move_generator()
+        while not terminated and steps < 20:
+            moves = env.unwrapped.move_generator()
             if moves:
                 action = random.choice(moves)
-                state, reward, done, _ = env.step(action)
+                state, reward, terminated, truncated, info = env.step(action)
             else:
                 break
             steps += 1

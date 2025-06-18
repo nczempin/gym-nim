@@ -67,7 +67,7 @@ def random_move(moves):
 def choose_move(Q, hs, env, om, maximizing_player, bonus):
     choices = Q[hs, :] + bonus
 #        print ("choices: " , choices)
-    moves = env.move_generator()
+    moves = env.unwrapped.move_generator()
 #        print ("legal moves: ", moves)
     a = []
     if len(moves) == 1:
@@ -103,8 +103,8 @@ def train(env):
     q = queue.Queue(ROLLING_ELEMENTS)
     for i in range(num_episodes):
         # Reset environment and get first new observation
-        s = env.reset()
-        env.set_board([2,1,1])
+        s, info = env.reset()
+        env.unwrapped.set_board([2,1,1])
         maximizing_player = 1  # TODO randomize; for that we need to generalize the reward function
         rAll = 0
         d = False
@@ -129,7 +129,7 @@ def train(env):
               
             # Get new state and reward from environment
     #        print('action: ', a)
-            s1, reward, d, _ = env.step(a)
+            s1, reward, d, truncated, _ = env.step(a)
             if (om == 2):
                 reward = - reward
             hs1 = hash_nim_state(s1)
@@ -185,4 +185,4 @@ for i in range(observation_space.n):
         if (q != 0):
             print (i, ", ", j, ": ",q)
 
-s = env.reset()
+s, info = env.reset()
