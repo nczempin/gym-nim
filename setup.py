@@ -14,20 +14,20 @@ requirements = read_requirements(os.path.join(here, 'requirements.txt'))
 
 setup(
     name='gym_nim',
-    version='0.0.1',
-    description='A Nim game environment for OpenAI Gym',
+    version='0.2.0',
+    description='A Nim game environment for Gymnasium',
     url="https://github.com/nczempin/gym-nim",
     author='Nicolai Czempin',
     packages=find_packages(),
     install_requires=requirements,
-    python_requires='>=3.6',
+    python_requires='>=3.9',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
     ],
 )  
