@@ -49,10 +49,19 @@ class NimEnv(gym.Env):
 
     def __init__(self):
         # Action space: tuple of (pile_index, pieces_to_take)
-        # We'll validate actions manually since old gym doesn't support our use case well
+        # We'll validate actions manually since gym doesn't support tuple actions directly
         self.action_space = spaces.Discrete(9)  # Placeholder, we'll validate manually
-        # Observation space: simplified for old gym version
-        self.observation_space = spaces.Discrete(8*8*8*2)  # flattened board + player
+        
+        # Observation space: Dict with board state and current player
+        self.observation_space = spaces.Dict({
+            'board': spaces.Box(low=0, high=7, shape=(3,), dtype=np.int32),
+            'on_move': spaces.Discrete(3, start=1)  # Player 1 or 2
+        })
+        
+        # For backward compatibility with Q-learning example that expects .n attribute
+        # This represents the flattened state space size
+        self.observation_space.n = 8 * 8 * 8 * 2  # All possible board states * players
+        
         self.state = None
     def step(self, action):
         """Execute one time step within the environment.

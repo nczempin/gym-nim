@@ -242,6 +242,69 @@ class TestNimEnv:
         assert hasattr(self.env.observation_space, 'n')
         assert self.env.action_space.n == 9  # As defined in the environment
         assert self.env.observation_space.n == 8*8*8*2  # As defined in the environment
+    
+    def test_observation_space_dict_structure(self):
+        """Test that observation space is properly structured as Dict."""
+        from gymnasium import spaces
+        
+        # Check that observation_space is a Dict
+        assert isinstance(self.env.observation_space, spaces.Dict)
+        
+        # Check the structure contains the expected keys
+        assert 'board' in self.env.observation_space.spaces
+        assert 'on_move' in self.env.observation_space.spaces
+        
+        # Check board space properties
+        board_space = self.env.observation_space.spaces['board']
+        assert isinstance(board_space, spaces.Box)
+        assert board_space.shape == (3,)
+        assert board_space.dtype == np.int32
+        assert np.all(board_space.low == 0)
+        assert np.all(board_space.high == 7)
+        
+        # Check on_move space properties
+        on_move_space = self.env.observation_space.spaces['on_move']
+        assert isinstance(on_move_space, spaces.Discrete)
+        assert on_move_space.n == 3  # Discrete(3) means values 0, 1, 2
+        assert on_move_space.start == 1  # But starts at 1, so valid values are 1, 2
+    
+    def test_observation_space_backward_compatibility(self):
+        """Test backward compatibility with .n attribute."""
+        # The observation space should have .n for compatibility with qtable.py
+        assert hasattr(self.env.observation_space, 'n')
+        assert self.env.observation_space.n == 8 * 8 * 8 * 2
+        
+        # Ensure the .n attribute persists after operations
+        obs_space = self.env.observation_space
+        assert obs_space.n == 8 * 8 * 8 * 2
+    
+    def test_observation_within_space(self):
+        """Test that observations are within the declared observation space."""
+        # Reset and check initial observation
+        state, info = self.env.reset()
+        
+        # Manually check that state matches observation space
+        # (gymnasium's passive checker might not understand our custom Dict+.n hybrid)
+        assert isinstance(state, dict)
+        assert 'board' in state
+        assert 'on_move' in state
+        
+        # Check board values are within bounds
+        board = state['board']
+        assert isinstance(board, np.ndarray)
+        assert board.shape == (3,)
+        assert np.all(board >= 0)
+        assert np.all(board <= 7)
+        
+        # Check on_move is valid
+        assert state['on_move'] in [1, 2]
+        
+        # Make a move and check again
+        state, reward, terminated, truncated, info = self.env.step([0, 2])
+        assert isinstance(state, dict)
+        assert np.all(state['board'] >= 0)
+        assert np.all(state['board'] <= 7)
+        assert state['on_move'] in [1, 2]
 
     def test_complete_game_scenario(self):
         """Test a complete game from start to finish."""
