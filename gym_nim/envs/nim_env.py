@@ -45,7 +45,7 @@ class NimEnv(gym.Env):
     >>> print(state['on_move'])
     2
     """
-    metadata = {'render.modes': ['human']}
+    metadata = {'render_modes': ['human']}
 
     def __init__(self):
         # Action space: tuple of (pile_index, pieces_to_take)
